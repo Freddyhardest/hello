@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rodrigo MC - Puter.js OpenRouter Chat</title>
+<title>Rodrigo MC AI</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -37,6 +37,15 @@
     border-radius: 15px;
     object-fit: cover;
     border: 2px solid #00ffcc;
+  }
+  #page-heading {
+    font-weight: bold;
+    font-size: 1.25rem;
+    padding: 0 20px 10px 20px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    white-space: nowrap;
+    user-select: none;
   }
   #chat-messages {
     flex-grow: 1;
@@ -102,6 +111,9 @@
       <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" />
       Rodrigo MC
     </header>
+    <div id="page-heading" aria-label="Page heading">
+      ☛​ ​𝙍​̳𝙤​̳𝙙​̳𝙧​̳𝙞​̳𝙜​̳𝙤​̳ ​̳𝙞​̳𝙨​̳ ​̳𝙞​̳𝙣​̳ ​̳𝙩​̳𝙝​̳𝙚​̳ ​̳𝙝​̳𝙤​̳𝙪​̳𝙨​̳𝙚 ̳ ☛
+    </div>
     <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
     <footer>
       <textarea id="user-input" placeholder="Ask something cosmic..."></textarea>
