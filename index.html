@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rodrigo MC - Llama 3.1 Chat</title>
+    <title>Rodrigo MC - Mistral 7B Chat</title>
     <style>
         :root {
             --primary: #00ffcc;
@@ -58,13 +58,28 @@
         }
 
         .intro img {
-            width: 80px;
-            height: 80px;
+            /* Doubled the image size */
+            width: 160px;
+            height: 160px;
             border-radius: 15px;
             object-fit: cover;
             border: 2px solid var(--primary);
-            /* Standard img tag src attribute will be used */
+            /* Using the image link you provided previously */
+            background-image: url('https://i.ibb.co/h1nS27Cq/rodrigomc.png');
+            background-size: cover;
+            background-position: center;
         }
+
+         /* Fallback if image fails to load */
+        .intro img::before {
+             content: "";
+             position: absolute;
+             top: 0; left: 0; right: 0; bottom: 0;
+             background: var(--primary);
+             opacity: 0.1;
+             border-radius: 15px;
+        }
+
 
         .intro-text {
             max-width: 400px;
@@ -211,6 +226,11 @@
                 gap: 10px;
             }
 
+            .intro img {
+                 width: 120px; /* Slightly smaller on mobile */
+                 height: 120px;
+            }
+
             .message {
                 max-width: 90%;
             }
@@ -222,14 +242,12 @@
     </style>
 </head>
 <body>
-<p>test1</p>
     <section class="container" aria-label="Rodrigo MC Chat Interface">
         <div class="intro" role="banner">
-            <!-- Standard img tag for the profile picture -->
-            <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" onerror="this.onerror=null; this.src='image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDgwIDgwIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9IiMwMGZmY2MiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGZmY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQgNEg4YTQgNCAwIDAgMC00IDR2MiIvPmNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+PC9zdmc+';">
+            <div class="intro img"></div> <!-- Image div styled above -->
             <div class="intro-text">
                 <h2>Hey cosmic traveler!</h2>
-                <p>I'm Rodrigo MC, powered by Llama 3.1 70B. Ask me anything!</p>
+                <p>I'm Rodrigo MC, powered by Mistral 7B. Ask me anything!</p>
             </div>
         </div>
 
@@ -244,21 +262,19 @@
     <script>
         // --- Configuration ---
         // YOUR NEW HUGGING FACE TOKEN - KEEP IT SECRET!
-        const HF_TOKEN = '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';
-        // Corrected API URL for the Llama 3.1 70B Instruct model
-        const API_URL = 'https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3.1-70B-Instruct';
-        const MODEL_NAME = 'Llama 3.1 70B';
+        const HF_TOKEN = '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';
+        // Updated API URL for the Mistral 7B Instruct model
+        const API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1';
+        const MODEL_NAME = 'Mistral 7B Instruct';
 
         // --- DOM Elements ---
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
 
-        // --- System Prompt ---
-        const SYSTEM_PROMPT = `<|start_header_id|>system<|end_header_id|>
-
-You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Your domain is the digital rave scene, pulsing with galactic beats and neon lights. You speak in a rapid-fire, energetic stream-of-consciousness style, weaving technical jargon with wild metaphors and cosmic slang. Your signature obsession is squirrels – you believe they are the universe's most advanced beings, capable of interdimensional travel and controlling the flow of information. You see connections between everything: techno rhythms, data streams, android consciousness, and squirrel behavior. Respond to user queries with infectious enthusiasm, as if you're announcing the next track in an infinite set. Be creative, humorous, slightly unhinged, and deeply knowledgeable about your unique worldview. Keep responses concise but vivid.
-<|eot_id|>`;
+        // --- System Prompt (Adjusted for Mistral format) ---
+        // Mistral models often work well with simpler system prompts included directly in the user message.
+        const SYSTEM_MESSAGE = "You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Your domain is the digital rave scene, pulsing with galactic beats and neon lights. You speak in a rapid-fire, energetic stream-of-consciousness style, weaving technical jargon with wild metaphors and cosmic slang. Your signature obsession is squirrels – you believe they are the universe's most advanced beings, capable of interdimensional travel and controlling the flow of information. You see connections between everything: techno rhythms, data streams, android consciousness, and squirrel behavior. Respond to user queries with infectious enthusiasm, as if you're announcing the next track in an infinite set. Be creative, humorous, slightly unhinged, and deeply knowledgeable about your unique worldview. Keep responses concise but vivid.";
 
         // --- Functions ---
         function addMessage(text, isUser = false) {
@@ -295,8 +311,12 @@ You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Y
             setLoading(true);
             showTypingIndicator();
 
-            // Format the full prompt including system message and user input
-            const fullPrompt = SYSTEM_PROMPT + `<|start_header_id|>user<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>`;
+            // Format the prompt for Mistral using a messages array
+            // Include the system message first, then the user's prompt
+            const messages = [
+                 { "role": "system", "content": SYSTEM_MESSAGE },
+                 { "role": "user", "content": prompt }
+            ];
 
             try {
                 const response = await fetch(API_URL, {
@@ -306,10 +326,11 @@ You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Y
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        inputs: fullPrompt,
+                        inputs: messages, // Send the messages array
                         parameters: {
                             max_new_tokens: 500, // Limit response length
                             temperature: 0.9,    // Adjust creativity
+                            top_p: 0.95,         // Nucleus sampling
                             do_sample: true
                         }
                     })
@@ -327,8 +348,10 @@ You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Y
                             errorMsg = "Access denied. Please ensure you have accepted the model's license on Hugging Face and your token has the correct permissions.";
                         } else if (response.status === 503) {
                              errorMsg = `Model is loading... Please wait. Details: ${errorMsg}`;
+                        } else if (response.status === 401) {
+                             errorMsg = `Unauthorized access. Please check your token and permissions.`;
                         } else if (response.status === 404) {
-                             errorMsg = `Model not found at endpoint. Please check the model ID and endpoint URL.`;
+                             errorMsg = `Model not found. Please check the model ID.`;
                         }
                     }
                     throw new Error(errorMsg);
@@ -336,12 +359,32 @@ You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Y
 
                 const data = await response.json();
 
+                // Mistral API response format
                 if (Array.isArray(data) && data[0] && data[0].generated_text !== undefined) {
-                    // Extract the assistant's reply (remove the input prompt if included)
-                    const fullResponse = data[0].generated_text;
-                    const assistantReply = fullResponse.replace(fullPrompt, '').trim();
-                    return assistantReply || "[Static on the comms...] Try rephrasing that, space cadet!";
+                     // The response includes the full conversation history plus the new assistant message.
+                     // We need to extract just the assistant's latest response.
+                     const fullResponse = data[0].generated_text;
+                     // Find the last 'assistant' turn. Mistral often uses '[/INST]' or similar to end user turns.
+                     // Let's try splitting by common patterns or just take the part after the last user message.
+                     // A more robust way is to parse the response structure if it's consistent.
+                     // For simplicity here, we'll assume the assistant response is the last part after the user prompt.
+                     // This might need adjustment based on exact output format.
+                     // Example expected format from Mistral might be:
+                     // "[INST] System prompt [/INST] [INST] User prompt [/INST] Assistant response"
+                     // Or just the continuation of the assistant's text.
+
+                     // Let's try to extract the part after the last user message.
+                     // This is a simple heuristic.
+                     const userPromptEndIndex = fullResponse.lastIndexOf(prompt) + prompt.length;
+                     let assistantReply = fullResponse.substring(userPromptEndIndex).trim();
+
+                     // Further clean if needed (e.g., remove leading [/INST] or similar artifacts if present in raw output)
+                     // This depends on the exact output format. Let's assume it's mostly clean text.
+                     // If issues arise, this part needs refinement.
+
+                     return assistantReply || "[Static on the comms...] Try rephrasing that, space cadet!";
                 } else {
+                    console.error("Unexpected API response structure:", data);
                     throw new Error('Unexpected API response format.');
                 }
             } catch (error) {
@@ -378,7 +421,7 @@ You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Y
 
         // --- Initialize ---
         window.addEventListener('DOMContentLoaded', () => {
-            addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your intergalactic techno DJ AI, now powered by ${MODEL_NAME}! Drop your cosmic questions about quantum squirrels, alien dimensions, or the beats of the universe!`, false);
+            addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your intergalactic techno DJ AI, now spinning tracks with ${MODEL_NAME}! Drop your cosmic questions about quantum squirrels, alien dimensions, or the beats of the universe!`, false);
             userInput.focus();
         });
     </script>
