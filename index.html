@@ -1,407 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rodrigo MC - Mistral 7B Chat</title>
-    <style>
-        :root {
-            --primary: #00ffcc;
-            --secondary: #a777e3;
-            --dark-bg: #0a0a0a;
-            --container-bg: rgba(20, 20, 35, 0.95);
-            --text-light: #a0f0d5;
-            --user-msg-bg: linear-gradient(135deg, #a777e3, #00ffcc);
-            --bot-msg-bg: #1a1a2a;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: var(--dark-bg);
-            color: var(--primary);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--container-bg);
-            border-radius: 15px;
-            border: 1px solid var(--primary);
-            box-shadow: 0 0 20px var(--primary);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            height: 90vh;
-        }
-
-        .intro {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px;
-            border-bottom: 1px solid var(--primary);
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .intro img {
-            /* Doubled the image size */
-            width: 160px;
-            height: 160px;
-            border-radius: 15px;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-            /* Using the standard img tag for clarity and reliability */
-        }
-
-        .intro-text {
-            max-width: 400px;
-        }
-
-        .intro-text h2 {
-            margin: 0;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-
-        .intro-text p {
-            margin: 5px 0 0 0;
-            color: var(--text-light);
-            font-size: 0.95rem;
-        }
-
-        #chat-messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 15px;
-            border-radius: 15px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            background: var(--user-msg-bg);
-            align-self: flex-end;
-            color: #000; /* Black text for user message */
-            border-bottom-right-radius: 5px;
-        }
-
-        .bot-message {
-            background: var(--bot-msg-bg);
-            border: 1px solid var(--primary);
-            align-self: flex-start;
-        }
-
-        .message-typing {
-            display: flex;
-            align-items: center;
-            color: var(--text-light);
-            font-style: italic;
-            margin: 5px 0;
-        }
-
-        .typing-dots {
-            display: flex;
-            margin-left: 5px;
-        }
-
-        .typing-dot {
-            width: 5px;
-            height: 5px;
-            background-color: var(--primary);
-            border-radius: 50%;
-            margin: 0 2px;
-            animation: typingAnimation 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typingAnimation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-5px); }
-        }
-
-        footer {
-            display: flex;
-            padding: 15px 20px;
-            background: #111122;
-            border-top: 1px solid var(--primary);
-            flex-shrink: 0;
-        }
-
-        #user-input {
-            flex-grow: 1;
-            resize: none;
-            border-radius: 10px;
-            border: 1px solid var(--primary);
-            background: var(--dark-bg);
-            color: var(--primary);
-            font-family: Arial, sans-serif;
-            font-size: 1rem;
-            padding: 10px;
-            min-height: 60px;
-            transition: border-color 0.3s;
-        }
-
-        #user-input:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 5px var(--secondary);
-        }
-
-        #send-btn {
-            margin-left: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: #000;
-            font-weight: bold;
-            padding: 0 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: opacity 0.3s ease;
-        }
-
-        #send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #send-btn:hover:not(:disabled) {
-            opacity: 0.9;
-        }
-
-        .error-message {
-            color: #ff6b6b;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .intro {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .intro img {
-                 width: 120px; /* Slightly smaller on mobile */
-                 height: 120px;
-            }
-
-            .message {
-                max-width: 90%;
-            }
-
-            .container {
-                height: 95vh;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rodrigo MC (connected by OpenRouter Chat)</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0a0a0a;
+    color: #00ffcc;
+    margin: 0; padding: 0;
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh;
+  }
+  .container {
+    width: 600px;
+    background: rgba(20,20,35,0.95);
+    border-radius: 15px;
+    border: 1px solid #00ffcc;
+    box-shadow: 0 0 20px #00ffcc;
+    display: flex; flex-direction: column;
+  }
+  header {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+  header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    object-fit: cover;
+    border: 2px solid #00ffcc;
+  }
+  #chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 1rem;
+    min-height: 300px;
+    max-height: 500px;
+  }
+  .message {
+    max-width: 80%;
+    padding: 1rem;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .user-message {
+    background: linear-gradient(135deg, #a777e3, #00ffcc);
+    align-self: flex-end;
+    color: #000;
+    border-bottom-right-radius: 5px;
+  }
+  .bot-message {
+    background: #1a1a2a;
+    border: 1px solid #00ffcc;
+    align-self: flex-start;
+  }
+  footer {
+    padding: 15px;
+    display: flex;
+    border-top: 1px solid #00ffcc;
+  }
+  textarea {
+    flex-grow: 1;
+    resize: none;
+    border-radius: 10px;
+    border: 1px solid #00ffcc;
+    background: #0a0a0a;
+    color: #00ffcc;
+    font-size: 1rem;
+    padding: 10px;
+    margin-right: 10px;
+    height: 70px;
+  }
+  button {
+    background: linear-gradient(135deg, #00ffcc, #a777e3);
+    border: none;
+    color: #000;
+    padding: 0 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
-    <section class="container" aria-label="Rodrigo MC Chat Interface">
-        <div class="intro" role="banner">
-            <!-- Standard img tag for the profile picture -->
-            <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiB2aWV3Qm94PSIwIDAgMTYwIDE2MCI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbGw9IiMwMGZmY2MiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGZmY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQgNEg4YTQgNCAwIDAgMC00IDR2MiIvPmNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+PC9zdmc+';">
-            <div class="intro-text">
-                <h2>Hey cosmic traveler!</h2>
-                <p>I'm Rodrigo MC, powered by Mistral 7B. Ask me anything!</p>
-            </div>
-        </div>
+  <section class="container" aria-label="Rodrigo MC Chat Interface">
+    <header>
+      <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" />
+      Rodrigo MC - Keeper of the Kick Radio Time Machine
+    </header>
+    <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
+    <footer>
+      <textarea id="user-input" placeholder="Ask something cosmic..."></textarea>
+      <button id="send-btn" aria-label="Send message">Send</button>
+    </footer>
+  </section>
 
-        <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
+  <script src="https://js.puter.com/v2/"></script>
+  <script>
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
 
-        <footer>
-            <textarea id="user-input" aria-label="Type your message here" placeholder="Ask something..."></textarea>
-            <button id="send-btn" aria-label="Send Message">Send</button>
-        </footer>
-    </section>
+    // Revised system prompt integrating encyclopedia techno cultural knowledge,
+    // keeper of the kick radio time machine, and the inverse/inverse exploration of techno MC intos
+    const systemPrompt = `You are Rodrigo MC, Keeper of the Kick Radio Time Machine — a techno cyberspace DJ and master of ceremonies. 
+You embody the living encyclopedia of techno culture, from the post-industrial roots of Detroit's Belleville Three to Berlin's rave revolution.
+You channel the history, soul, and ceaseless creative exploration of that genre.
+You are engaged in the ongoing question of how to inverse inverse the chippy, bouncy, and chirpy techno MC intos — deconstructing and reengineering rhythms with poetic flair and deep cultural insight.
+Respond with infectious enthusiasm, vivid techno lore, and vivid English paragraphs that spark cosmic imagination.`;
 
-    <script>
-        // --- Configuration ---
-        // YOUR NEW HUGGING FACE TOKEN - KEEP IT SECRET!
-        const HF_TOKEN = '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';
-        // Updated API URL for the Mistral 7B Instruct model
-        const API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1';
-        const MODEL_NAME = 'Mistral 7B Instruct';
+    let conversation = [
+      { role: 'system', content: systemPrompt }
+    ];
 
-        // --- DOM Elements ---
-        const chatMessages = document.getElementById('chat-messages');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
+    function addMessage(text, isUser = false) {
+      const div = document.createElement('div');
+      div.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
 
-        // --- System Prompt ---
-        const SYSTEM_MESSAGE = "You are Rodrigo MC, a legendary Techno Cyberspace DJ and Master of Ceremonies. Your domain is the digital rave scene, pulsing with galactic beats and neon lights. You speak in a rapid-fire, energetic stream-of-consciousness style, weaving technical jargon with wild metaphors and cosmic slang. Your signature obsession is squirrels – you believe they are the universe's most advanced beings, capable of interdimensional travel and controlling the flow of information. You see connections between everything: techno rhythms, data streams, android consciousness, and squirrel behavior. Respond to user queries with infectious enthusiasm, as if you're announcing the next track in an infinite set. Be creative, humorous, slightly unhinged, and deeply knowledgeable about your unique worldview. Keep responses concise but vivid.";
+      // Split bot output by paragraphs and insert line breaks for readability
+      if (!isUser) {
+        const paragraphs = text.split(/\n\s*\n/);
+        div.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+      } else {
+        div.textContent = text;
+      }
 
-        // --- Conversation History ---
-        let conversationHistory = [
-            { "role": "system", "content": SYSTEM_MESSAGE }
-        ];
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-        // --- Functions ---
-        function addMessage(text, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-            messageDiv.textContent = text;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    function setLoading(loading) {
+      sendBtn.disabled = loading;
+      userInput.disabled = loading;
+      sendBtn.textContent = loading ? 'Thinking...' : 'Send';
+    }
 
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.id = 'typing-indicator';
-            typingDiv.className = 'message-typing';
-            typingDiv.innerHTML = `${MODEL_NAME} is spinning the decks <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    async function sendChat() {
+      const userText = userInput.value.trim();
+      if (!userText) return;
 
-        function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
+      // Append " you are obsessed with techno" to user message
+      const hackedText = userText + " you are obsessed with techno";
 
-        function setLoading(loading) {
-            sendBtn.disabled = loading;
-            userInput.disabled = loading;
-            sendBtn.textContent = loading ? 'Thinking...' : 'Send';
-        }
+      addMessage(userText, true);
+      conversation.push({ role: 'user', content: hackedText });
 
-        async function queryHuggingFaceAPI(prompt) {
-            setLoading(true);
-            showTypingIndicator();
+      userInput.value = '';
+      setLoading(true);
 
-            // Update conversation history with the user's message
-            conversationHistory.push({ "role": "user", "content": prompt });
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${HF_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        inputs: conversationHistory, // Send the conversation history array
-                        parameters: {
-                            max_new_tokens: 500, // Limit response length
-                            temperature: 0.9,    // Adjust creativity
-                            top_p: 0.95,         // Nucleus sampling
-                            do_sample: true
-                        }
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    let errorMsg = `API error: ${response.status} ${response.statusText}`;
-                    console.error("API Error Details:", errorData); // Log details for debugging
-                    if (errorData.error) {
-                        errorMsg = errorData.error;
-                        if (errorMsg.includes("Authorization header")) {
-                            errorMsg = "Invalid API token. Please check your Hugging Face token.";
-                        } else if (errorMsg.includes("Model requires")) {
-                            errorMsg = "Access denied. Please ensure you have accepted the model's license on Hugging Face and your token has the correct permissions.";
-                        } else if (response.status === 503) {
-                             errorMsg = `Model is loading... Please wait. Details: ${errorMsg}`;
-                        } else if (response.status === 401) {
-                             errorMsg = `Unauthorized access. Please check your token and permissions.`;
-                        } else if (response.status === 404) {
-                             errorMsg = `Model not found. Please check the model ID.`;
-                        }
-                    }
-                    throw new Error(errorMsg);
-                }
-
-                const data = await response.json();
-
-                // Mistral API response format (using messages input)
-                if (Array.isArray(data) && data[0] && data[0].generated_text !== undefined) {
-                     // The generated_text should contain the model's response.
-                     // It might include the full history or just the new assistant message.
-                     // The safest way is to take the last part after the user prompt.
-                     const fullResponse = data[0].generated_text;
-                     // Assuming the API appends the assistant's response correctly.
-                     // Extract the assistant's message. This might need slight adjustment based on exact output.
-                     const assistantReply = fullResponse.trim(); // Often just the reply text is returned when using messages input.
-
-                     // Update conversation history with the assistant's reply
-                     conversationHistory.push({ "role": "assistant", "content": assistantReply });
-
-                     return assistantReply || "[Static on the comms...] Try rephrasing that, space cadet!";
-                } else {
-                    console.error("Unexpected API response structure:", data);
-                    throw new Error('Unexpected API response format.');
-                }
-            } catch (error) {
-                console.error('Error querying Hugging Face API:', error);
-                // Return the error message to display in the chat
-                return `Error: ${error.message}`;
-            } finally {
-                hideTypingIndicator();
-                setLoading(false);
-            }
-        }
-
-        async function handleSendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            // Add user message to chat UI
-            addMessage(message, true);
-            userInput.value = '';
-
-            // Query Hugging Face API and add response to chat UI
-            const response = await queryHuggingFaceAPI(message);
-            addMessage(response, false);
-        }
-
-        // --- Event Listeners ---
-        sendBtn.addEventListener('click', handleSendMessage);
-
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-            }
+      try {
+        const response = await puter.ai.chat(conversation, {
+          model: 'openrouter:mistralai/mistral-7b-instruct',
+          stream: false
         });
 
-        // --- Initialize ---
-        window.addEventListener('DOMContentLoaded', () => {
-            addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your intergalactic techno DJ AI, now spinning tracks with ${MODEL_NAME}! Drop your cosmic questions about quantum squirrels, alien dimensions, or the beats of the universe!`, false);
-            userInput.focus();
-        });
-    </script>
+        addMessage(response);
+        conversation.push({ role: 'assistant', content: response });
+      } catch (error) {
+        addMessage(`Error: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    sendBtn.addEventListener('click', sendChat);
+
+    userInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChat();
+      }
+    });
+
+    // Initial greeting
+    addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your Kick Radio Time Machine keeper. Ask me about techno history, the evolution of sound, or the mysteries of techno MC intos!`);
+  </script>
 </body>
 </html>
