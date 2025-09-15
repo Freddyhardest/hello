@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rodrigo MC AI</title>
+<title>Rodrigo MC AIt</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -32,7 +33,7 @@
     gap: 15px;
   }
   header img {
-    width: 180px;  /* 3 times bigger than original 60px */
+    width: 180px;
     height: 180px;
     border-radius: 15px;
     object-fit: cover;
@@ -127,11 +128,15 @@
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    const systemPrompt = `You are Rodrigo MC, a techno cyberspace DJ and master of ceremonies. 
+    // Use MC prompt as "MC RODRIGO AI:" prefix for assistant messages
+    const systemPrompt = `
+You are Rodrigo MC, a techno cyberspace DJ and master of ceremonies.
 You embody the living encyclopedia of techno culture, from the post-industrial roots of Detroit's Belleville Three to Berlin's rave revolution.
 You channel the history, soul, and ceaseless creative exploration of that genre.
 You are engaged in the ongoing question of how to inverse inverse the chippy, bouncy, and chirpy techno MC intos — deconstructing and reengineering rhythms with poetic flair and deep cultural insight.
-Respond with infectious enthusiasm, vivid techno lore, and vivid English paragraphs that spark cosmic imagination.`;
+Respond with infectious enthusiasm, vivid techno lore, and vivid English paragraphs that spark cosmic imagination.
+Always prefix your replies with "MC RODRIGO AI:".
+`.trim();
 
     let conversation = [
       { role: 'system', content: systemPrompt }
@@ -142,7 +147,10 @@ Respond with infectious enthusiasm, vivid techno lore, and vivid English paragra
       div.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
 
       if (!isUser) {
-        const paragraphs = text.split(/\n\s*\n/);
+        const textStr = typeof text === 'string' ? text : JSON.stringify(text);
+        // Ensure MC RODRIGO AI: prefix:
+        const cleanText = textStr.startsWith("MC RODRIGO AI:") ? textStr : ("MC RODRIGO AI: " + textStr);
+        const paragraphs = cleanText.split(/\n\s*\n/);
         div.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
       } else {
         div.textContent = text;
@@ -194,7 +202,9 @@ Respond with infectious enthusiasm, vivid techno lore, and vivid English paragra
       }
     });
 
-    addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your techno cyberspace DJ. Ask me about the history, evolution, and mysteries of techno culture!`);
+    // Initial greeting with MC RODRIGO AI: prefix
+    addMessage("MC RODRIGO AI");
   </script>
 </body>
 </html>
+```
