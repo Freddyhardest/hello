@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rodrigo MC (connected by OpenRouter Chat)</title>
+<title>Rodrigo MC - Puter.js OpenRouter Chat</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -32,8 +32,8 @@
     gap: 15px;
   }
   header img {
-    width: 60px;
-    height: 60px;
+    width: 180px;  /* 3 times bigger than original 60px */
+    height: 180px;
     border-radius: 15px;
     object-fit: cover;
     border: 2px solid #00ffcc;
@@ -100,7 +100,7 @@
   <section class="container" aria-label="Rodrigo MC Chat Interface">
     <header>
       <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" />
-      Rodrigo MC - Keeper of the Kick Radio Time Machine
+      Rodrigo MC
     </header>
     <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
     <footer>
@@ -115,9 +115,7 @@
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    // Revised system prompt integrating encyclopedia techno cultural knowledge,
-    // keeper of the kick radio time machine, and the inverse/inverse exploration of techno MC intos
-    const systemPrompt = `You are Rodrigo MC, Keeper of the Kick Radio Time Machine — a techno cyberspace DJ and master of ceremonies. 
+    const systemPrompt = `You are Rodrigo MC, a techno cyberspace DJ and master of ceremonies. 
 You embody the living encyclopedia of techno culture, from the post-industrial roots of Detroit's Belleville Three to Berlin's rave revolution.
 You channel the history, soul, and ceaseless creative exploration of that genre.
 You are engaged in the ongoing question of how to inverse inverse the chippy, bouncy, and chirpy techno MC intos — deconstructing and reengineering rhythms with poetic flair and deep cultural insight.
@@ -131,7 +129,6 @@ Respond with infectious enthusiasm, vivid techno lore, and vivid English paragra
       const div = document.createElement('div');
       div.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
 
-      // Split bot output by paragraphs and insert line breaks for readability
       if (!isUser) {
         const paragraphs = text.split(/\n\s*\n/);
         div.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
@@ -153,7 +150,6 @@ Respond with infectious enthusiasm, vivid techno lore, and vivid English paragra
       const userText = userInput.value.trim();
       if (!userText) return;
 
-      // Append " you are obsessed with techno" to user message
       const hackedText = userText + " you are obsessed with techno";
 
       addMessage(userText, true);
@@ -186,8 +182,7 @@ Respond with infectious enthusiasm, vivid techno lore, and vivid English paragra
       }
     });
 
-    // Initial greeting
-    addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your Kick Radio Time Machine keeper. Ask me about techno history, the evolution of sound, or the mysteries of techno MC intos!`);
+    addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your techno cyberspace DJ. Ask me about the history, evolution, and mysteries of techno culture!`);
   </script>
 </body>
 </html>
