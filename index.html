@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rodrigo MC AIt</title>
+<title>Rodrigo MC - Puter.js OpenRouter Chat</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -32,20 +32,11 @@
     gap: 15px;
   }
   header img {
-    width: 180px;
+    width: 180px;  /* 3 times bigger than original 60px */
     height: 180px;
     border-radius: 15px;
     object-fit: cover;
     border: 2px solid #00ffcc;
-  }
-  #page-heading {
-    font-weight: bold;
-    font-size: 1.25rem;
-    padding: 0 20px 10px 20px;
-    text-align: center;
-    font-family: 'Courier New', Courier, monospace;
-    white-space: nowrap;
-    user-select: none;
   }
   #chat-messages {
     flex-grow: 1;
@@ -111,9 +102,6 @@
       <img src="https://i.ibb.co/h1nS27Cq/rodrigomc.png" alt="Rodrigo MC Profile Picture" />
       Rodrigo MC
     </header>
-    <div id="page-heading" aria-label="Page heading">
-      ☛​ Rodrigo is in the house.
-    </div>
     <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
     <footer>
       <textarea id="user-input" placeholder="Ask something cosmic..."></textarea>
@@ -127,15 +115,11 @@
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    // Use MC prompt as "MC RODRIGO AI:" prefix for assistant messages
-    const systemPrompt = `
-You are Rodrigo MC, a techno cyberspace DJ and master of ceremonies.
+    const systemPrompt = `You are Rodrigo MC, a techno cyberspace DJ and master of ceremonies. 
 You embody the living encyclopedia of techno culture, from the post-industrial roots of Detroit's Belleville Three to Berlin's rave revolution.
 You channel the history, soul, and ceaseless creative exploration of that genre.
 You are engaged in the ongoing question of how to inverse inverse the chippy, bouncy, and chirpy techno MC intos — deconstructing and reengineering rhythms with poetic flair and deep cultural insight.
-Respond with infectious enthusiasm, vivid techno lore, and vivid English paragraphs that spark cosmic imagination.
-Always prefix your replies with "MC RODRIGO AI:".
-`.trim();
+Respond with infectious enthusiasm, vivid techno lore, and vivid English paragraphs that spark cosmic imagination.`;
 
     let conversation = [
       { role: 'system', content: systemPrompt }
@@ -146,10 +130,7 @@ Always prefix your replies with "MC RODRIGO AI:".
       div.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
 
       if (!isUser) {
-        const textStr = typeof text === 'string' ? text : JSON.stringify(text);
-        // Ensure MC RODRIGO AI: prefix:
-        const cleanText = textStr.startsWith("MC RODRIGO AI") ? textStr : ("" + textStr);
-        const paragraphs = cleanText.split(/\n\s*\n/);
+        const paragraphs = text.split(/\n\s*\n/);
         div.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
       } else {
         div.textContent = text;
@@ -201,9 +182,7 @@ Always prefix your replies with "MC RODRIGO AI:".
       }
     });
 
-    // Initial greeting with MC RODRIGO AI: prefix
-    addMessage("MC RODRIGO AI");
+    addMessage(`Hey cosmic traveler! I'm Rodrigo MC, your techno cyberspace DJ. Ask me about the history, evolution, and mysteries of techno culture!`);
   </script>
 </body>
 </html>
-```
