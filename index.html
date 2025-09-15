@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,7 +112,7 @@
       Rodrigo MC
     </header>
     <div id="page-heading" aria-label="Page heading">
-      ☛​ ​𝙍​̳𝙤​̳𝙙​̳𝙧​̳𝙞​̳𝙜​̳𝙤​̳ ​̳𝙞​̳𝙨​̳ ​̳𝙞​̳𝙣​̳ ​̳𝙩​̳𝙝​̳𝙚​̳ ​̳𝙝​̳𝙤​̳𝙪​̳𝙨​̳𝙚 ̳ ☛
+      ☛​ Rodrigo is in the house.
     </div>
     <main id="chat-messages" aria-live="polite" aria-relevant="additions"></main>
     <footer>
@@ -149,7 +148,7 @@ Always prefix your replies with "MC RODRIGO AI:".
       if (!isUser) {
         const textStr = typeof text === 'string' ? text : JSON.stringify(text);
         // Ensure MC RODRIGO AI: prefix:
-        const cleanText = textStr.startsWith("MC RODRIGO AI:") ? textStr : ("MC RODRIGO AI: " + textStr);
+        const cleanText = textStr.startsWith("MC RODRIGO AI") ? textStr : ("" + textStr);
         const paragraphs = cleanText.split(/\n\s*\n/);
         div.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
       } else {
