@@ -112,9 +112,8 @@
             statusDiv.className = 'status loading';
 
             try {
-                // Send the request to YOUR PHP server
-                // REPLACE 'pagename.atwebpages.com' WITH YOUR ACTUAL DOMAIN
-                const response = await fetch('https://pagename.atwebpages.com/fetch.php?url=' + encodeURIComponent(targetUrl));
+                // Send the request to YOUR PHP server (hello.php) using HTTP
+                const response = await fetch('http://pagename.atwebpages.com/hello.php?url=' + encodeURIComponent(targetUrl));
 
                 const data = await response.json();
 
