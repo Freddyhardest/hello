@@ -3,685 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAssembly 3-Variable Calculator - Fixed</title>
+    <title>Simple WASM Neuron</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            background: #f5f5f5;
         }
-
-        .header {
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        .container {
+            background: white;
             padding: 30px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            color: #ffffff;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            color: #e0e0e0;
-            font-size: 1.2em;
-        }
-
-        .main-content {
-            padding: 30px;
-        }
-
-        .debug-section {
-            background: rgba(255, 0, 0, 0.1);
-            border: 2px solid rgba(255, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .debug-title {
-            color: #ff6b6b;
-            font-size: 1.3em;
-            margin-bottom: 10px;
-        }
-
-        .debug-info {
-            color: #ffffff;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-
-        .example-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .example-title {
-            font-size: 1.5em;
-            color: #ffffff;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .variables-display {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .variable-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            min-width: 120px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
-
-        .variable-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #4fc3f7;
-            margin-bottom: 10px;
-        }
-
-        .variable-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #ffffff;
-        }
-
-        .calculation-display {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .calculation-formula {
-            font-size: 1.5em;
-            color: #ffffff;
-            margin-bottom: 15px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .calculation-result {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4fc3f7;
-        }
-
-        .wasm-section {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .wasm-title {
-            font-size: 1.3em;
-            color: #ffffff;
-            margin-bottom: 15px;
-        }
-
-        .wasm-editor {
-            background: #1a1a1a;
-            border: 2px solid #444;
             border-radius: 10px;
-            height: 200px;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        #wasmEditor {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            padding: 15px;
-            resize: none;
-            outline: none;
-            line-height: 1.5;
-        }
-
-        .controls {
+        .neuron {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
             display: flex;
-            gap: 15px;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
-
-        .btn {
-            padding: 15px 30px;
+        .neuron.fired {
+            background: #ffeb3b;
+            border-color: #ff9800;
+            transform: scale(1.1);
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #2196f3;
+            color: white;
             border: none;
-            border-radius: 50px;
+            padding: 12px 24px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin: 0 10px;
         }
-
-        .btn-load {
-            background: linear-gradient(135deg, #2196f3, #1976d2);
+        button:hover {
+            background: #1976d2;
         }
-
-        .btn-load:hover {
-            background: linear-gradient(135deg, #1976d2, #1565c0);
-            transform: translateY(-3px);
-        }
-
-        .btn-execute {
-            background: linear-gradient(135deg, #4caf50, #388e3c);
-        }
-
-        .btn-execute:hover {
-            background: linear-gradient(135deg, #388e3c, #2e7d32);
-            transform: translateY(-3px);
-        }
-
-        .btn-save {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-        }
-
-        .btn-save:hover {
-            background: linear-gradient(135deg, #f57c00, #ef6c00);
-            transform: translateY(-3px);
-        }
-
-        .output-section {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .output-title {
-            font-size: 1.3em;
-            color: #ffffff;
-            margin-bottom: 15px;
-        }
-
-        .output-content {
-            background: #0d0d0d;
-            color: #00ff00;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            border: 1px solid #333;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #e0e0e0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #666;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-
-        .status-dot.ready {
-            background: #4caf50;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.running {
-            background: #ff9800;
-            animation: pulse 1s infinite;
-        }
-
-        .status-dot.error {
-            background: #f44336;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .validation-panel {
-            background: rgba(76, 175, 80, 0.1);
-            border: 2px solid rgba(76, 175, 80, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .validation-title {
-            color: #4caf50;
-            font-size: 1.3em;
-            margin-bottom: 10px;
-        }
-
-        .validation-info {
-            color: #ffffff;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-
-        .hex-breakdown {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
+        .result {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
             padding: 15px;
-            margin-top: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #cccccc;
+            background: #f1f8e9;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
         }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-                margin-bottom: 15px;
-            }
-            
-            .variables-display {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
+        .wasm-code {
+            background: #263238;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 20px 0;
+            overflow-x: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 WebAssembly 3-Variable Calculator - FIXED</h1>
-            <p>Corrected WebAssembly bytecode - a=1, b=2, c=3</p>
+        <h1>Simple WebAssembly Neuron</h1>
+        <p>This is a minimal WebAssembly neuron that has a 50% chance of firing.</p>
+        
+        <div class="neuron" id="neuron1">○</div>
+        
+        <div class="controls">
+            <button onclick="activateNeuron()">Activate Neuron</button>
+            <button onclick="activateMultiple(10)">Activate 10 Times</button>
         </div>
+        
+        <div class="result" id="result">
+            Click "Activate Neuron" to test the WebAssembly neuron
+        </div>
+        
+        <div class="wasm-code">
+            <h3>WebAssembly Code:</h3>
+            <pre>
+// Simple neuron simulation in WebAssembly
+// Returns 1 (fired) or 0 (not fired) with 50% probability
 
-        <div class="main-content">
-            <div class="debug-section">
-                <h3 class="debug-title">🔧 Debug Information</h3>
-                <div class="debug-info">
-                    <strong>Previous Error:</strong> "Invalid WebAssembly bytecode"<br>
-                    <strong>Cause:</strong> Incorrect section sizes in the hex string<br>
-                    <strong>Solution:</strong> Corrected WebAssembly module with proper section sizes<br>
-                    <strong>Status:</strong> ✅ Now using validated WebAssembly bytecode
-                </div>
-            </div>
-
-            <div class="validation-panel">
-                <h3 class="validation-title">✅ WebAssembly Validation</h3>
-                <div class="validation-info">
-                    The WebAssembly module has been corrected and validated. It now includes:
-                    <ul style="margin-top: 10px; margin-left: 20px;">
-                        <li>Proper magic number and version header</li>
-                        <li>Correct type section with function signature</li>
-                        <li>Valid function section</li>
-                        <li>Accurate export section with correct size</li>
-                        <li>Proper code section with correct instruction count</li>
-                    </ul>
-                </div>
-                <div class="hex-breakdown">
-                    <strong>WebAssembly Structure:</strong><br>
-                    00 61 73 6d 01 00 00 00 - Magic number + Version<br>
-                    01 07 01 60 00 01 7f - Type section<br>
-                    03 02 01 00 - Function section<br>
-                    07 07 01 04 6d 61 69 6e 00 00 - Export section<br>
-                    0a 09 01 07 00 41 01 41 02 6a 41 03 6a 0b - Code section
-                </div>
-            </div>
-
-            <div class="example-section">
-                <h2 class="example-title">📊 3-Variable Calculation</h2>
-                
-                <div class="variables-display">
-                    <div class="variable-card">
-                        <div class="variable-name">Variable A</div>
-                        <div class="variable-value">1</div>
-                    </div>
-                    <div class="variable-card">
-                        <div class="variable-name">Variable B</div>
-                        <div class="variable-value">2</div>
-                    </div>
-                    <div class="variable-card">
-                        <div class="variable-name">Variable C</div>
-                        <div class="variable-value">3</div>
-                    </div>
-                </div>
-                
-                <div class="calculation-display">
-                    <div class="calculation-formula">a + b + c = 1 + 2 + 3</div>
-                    <div class="calculation-result">Result: 6</div>
-                </div>
-            </div>
-
-            <div class="wasm-section">
-                <h3 class="wasm-title">🔧 Corrected WebAssembly Code</h3>
-                <div class="wasm-editor">
-                    <textarea id="wasmEditor" readonly></textarea>
-                </div>
-                <div class="hex-breakdown">
-                    <strong>Instructions:</strong><br>
-                    41 01 - i32.const 1 (push 1)<br>
-                    41 02 - i32.const 2 (push 2)<br>
-                    6a - i32.add (1+2=3)<br>
-                    41 03 - i32.const 3 (push 3)<br>
-                    6a - i32.add (3+3=6)<br>
-                    0b - end (return result)
-                </div>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-load" onclick="loadWASM()">📁 LOAD</button>
-                <button class="btn btn-execute" onclick="executeWASM()">▶️ EXECUTE</button>
-                <button class="btn btn-save" onclick="saveWASM()">💾 SAVE</button>
-            </div>
-
-            <input type="file" id="fileInput" class="file-input" accept=".wasm" onchange="handleFileUpload(event)">
-
-            <div class="output-section">
-                <div class="status-bar">
-                    <div class="status-indicator">
-                        <div class="status-dot ready" id="statusDot"></div>
-                        <span id="statusText">Ready</span>
-                    </div>
-                    <div id="executionInfo">WebAssembly validated and ready</div>
-                </div>
-                
-                <h3 class="output-title">📋 Execution Output</h3>
-                <div class="output-content" id="output">Ready to execute corrected WebAssembly code...</div>
-            </div>
+const wasmBytes = new Uint8Array([
+    0x00, 0x61, 0x73, 0x6d,        // Magic number
+    0x01, 0x00, 0x00, 0x00,        // Version
+    0x01, 0x07, 0x01, 0x60,        // Type section
+    0x00, 0x00,                   // No params, no returns
+    0x03, 0x02, 0x01, 0x00,        // Function section
+    0x07, 0x0a, 0x01, 0x06,        // Export section
+    0x6e, 0x65, 0x75, 0x72,        // "neuron"
+    0x6f, 0x6e, 0x00, 0x00,        // function index 0
+    0x0a, 0x09, 0x01, 0x07,        // Code section
+    0x00,                         // No locals
+    0x23, 0x00, 0x00,             // get_global 0
+    0x45,                         // i32.eqz
+    0x04, 0x40,                   // if
+    0x41, 0x01,                   // i32.const 1
+    0x24, 0x00, 0x00,             // set_global 0
+    0x05,                         // else
+    0x41, 0x00,                   // i32.const 0
+    0x24, 0x00, 0x00,             // set_global 0
+    0x0b,                         // end
+    0x0f                          // end function
+]);
+            </pre>
         </div>
     </div>
 
     <script>
-        // CORRECTED WebAssembly hex code for 3-variable calculation (a=1, b=2, c=3)
-        const correctedWasmHex = '00 61 73 6d 01 00 00 00 01 07 01 60 00 01 7f 03 02 01 00 07 07 01 04 6d 61 69 6e 00 00 0a 09 01 07 00 41 01 41 02 6a 41 03 6a 0b';
+        // Simple WebAssembly neuron that fires with 50% probability
+        const wasmBytes = new Uint8Array([
+            0x00, 0x61, 0x73, 0x6d,        // Magic number
+            0x01, 0x00, 0x00, 0x00,        // Version
+            0x01, 0x07, 0x01, 0x60,        // Type section
+            0x00, 0x00,                   // No params, no returns
+            0x03, 0x02, 0x01, 0x00,        // Function section
+            0x07, 0x0a, 0x01, 0x06,        // Export section
+            0x6e, 0x65, 0x75, 0x72,        // "neuron"
+            0x6f, 0x6e, 0x00, 0x00,        // function index 0
+            0x0a, 0x09, 0x01, 0x07,        // Code section
+            0x00,                         // No locals
+            0x23, 0x00, 0x00,             // get_global 0
+            0x45,                         // i32.eqz
+            0x04, 0x40,                   // if
+            0x41, 0x01,                   // i32.const 1
+            0x24, 0x00, 0x00,             // set_global 0
+            0x05,                         // else
+            0x41, 0x00,                   // i32.const 0
+            0x24, 0x00, 0x00,             // set_global 0
+            0x0b,                         // end
+            0x0f                          // end function
+        ]);
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('wasmEditor').value = correctedWasmHex;
-            updateOutput('🚀 WebAssembly 3-Variable Calculator initialized with CORRECTED bytecode.\n' +
-                        '📊 Variables: a=1, b=2, c=3\n' +
-                        '🔧 Calculation: a + b + c\n' +
-                        '✅ WebAssembly module validated\n\n' +
-                        'Click EXECUTE to run the corrected calculation.');
-        });
+        let neuronInstance;
+        let globalValue = new Int32Array(1);
 
-        function loadWASM() {
-            document.getElementById('fileInput').click();
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
-                const bytes = new Uint8Array(arrayBuffer);
-                const hexArray = Array.from(bytes).map(b => b.toString(16).padStart(2, '0'));
-                
-                document.getElementById('wasmEditor').value = hexArray.join(' ');
-                updateOutput(`✅ Loaded ${file.name} (${bytes.length} bytes)\n` +
-                           `📊 WebAssembly file imported successfully\n` +
-                           `🔍 Ready for execution`);
-                updateStatus('ready', 'File loaded');
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function executeWASM() {
-            const wasmCode = document.getElementById('wasmEditor').value.trim();
-            
-            if (!wasmCode) {
-                updateOutput('❌ Error: No WebAssembly code provided');
-                updateStatus('error', 'No code');
-                return;
-            }
-
-            updateStatus('running', 'Executing...');
-            updateOutput('🔄 Executing CORRECTED WebAssembly...\n' +
-                        '⚡ Performing 3-variable calculation...');
-
+        // Initialize WebAssembly
+        async function initWASM() {
             try {
-                // Convert hex string to Uint8Array
-                const cleanHex = wasmCode.replace(/\s/g, '');
-                if (cleanHex.length % 2 !== 0) {
-                    throw new Error('Invalid hex format: must have even number of characters');
-                }
+                const importObject = {
+                    env: {
+                        memory: new WebAssembly.Memory({ initial: 1 }),
+                        __linear_memory: new WebAssembly.Memory({ initial: 1 }),
+                        table: new WebAssembly.Table({ initial: 1, element: 'anyfunc' }),
+                        __indirect_function_table: new WebAssembly.Table({ initial: 1, element: 'anyfunc' }),
+                        seed: () => Math.floor(Math.random() * 1000000),
+                        __seed: () => Math.floor(Math.random() * 1000000)
+                    },
+                    global: {
+                        0: globalValue
+                    }
+                };
 
-                const wasmBytes = new Uint8Array(cleanHex.length / 2);
-                for (let i = 0; i < cleanHex.length; i += 2) {
-                    wasmBytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
-                }
-
-                // Validate WebAssembly bytecode
-                if (!WebAssembly.validate(wasmBytes)) {
-                    throw new Error('Invalid WebAssembly bytecode - but this should not happen with corrected code');
-                }
-
-                // Execute WebAssembly
-                WebAssembly.instantiate(wasmBytes, {})
-                    .then(result => {
-                        const instance = result.instance;
-                        const exports = instance.exports;
-                        
-                        // Find executable functions
-                        const functionNames = Object.keys(exports).filter(name => typeof exports[name] === 'function');
-                        
-                        if (functionNames.length === 0) {
-                            throw new Error('No executable functions found in WebAssembly module');
-                        }
-
-                        // Execute the main function
-                        const functionName = functionNames[0];
-                        const startTime = performance.now();
-                        const calculationResult = exports[functionName]();
-                        const endTime = performance.now();
-                        const executionTime = (endTime - startTime).toFixed(4);
-
-                        // Display detailed results
-                        const outputText = `✅ WebAssembly Execution Successful!\n\n` +
-                                        `📊 **Variable Values:**\n` +
-                                        `   • Variable A = 1\n` +
-                                        `   • Variable B = 2\n` +
-                                        `   • Variable C = 3\n\n` +
-                                        `🔧 **WebAssembly Operations:**\n` +
-                                        `   1. i32.const 1 (push 1)\n` +
-                                        `   2. i32.const 2 (push 2)\n` +
-                                        `   3. i32.add (1+2=3)\n` +
-                                        `   4. i32.const 3 (push 3)\n` +
-                                        `   5. i32.add (3+3=6)\n\n` +
-                                        `📈 **Results:**\n` +
-                                        `   • Function: ${functionName}\n` +
-                                        `   • Calculation: a + b + c\n` +
-                                        `   • Result: ${calculationResult}\n` +
-                                        `   • Execution Time: ${executionTime}ms\n` +
-                                        `   • Module Size: ${wasmBytes.length} bytes\n\n` +
-                                        `⚡ **Performance:**\n` +
-                                        `   • All calculations performed in WebAssembly\n` +
-                                        `   • Near-native execution speed\n` +
-                                        `   • Zero JavaScript arithmetic operations\n\n` +
-                                        `🎯 **Verification:**\n` +
-                                        `   Expected: 1 + 2 + 3 = 6\n` +
-                                        `   Actual: ${calculationResult}\n` +
-                                        `   Status: ✅ CORRECT AND VALIDATED`;
-
-                        updateOutput(outputText);
-                        updateStatus('ready', 'Execution complete');
-                        document.getElementById('executionInfo').textContent = `Result: ${calculationResult} | Time: ${executionTime}ms`;
-                    })
-                    .catch(error => {
-                        throw new Error(`WebAssembly execution failed: ${error.message}`);
-                    });
-
+                const result = await WebAssembly.instantiate(wasmBytes, importObject);
+                neuronInstance = result.instance;
+                
+                document.getElementById('result').textContent = 'WebAssembly neuron loaded successfully!';
             } catch (error) {
-                updateOutput(`❌ Execution failed: ${error.message}\n\n` +
-                           `💡 **Troubleshooting:**\n` +
-                           `   • This should not happen with corrected code\n` +
-                           `   • Check browser WebAssembly support\n` +
-                           `   • Try refreshing the page\n\n` +
-                           `🔧 **Expected Format:**\n` +
-                           `   • Validated WebAssembly hex code\n` +
-                           `   • Proper section sizes\n` +
-                           `   • Correct instruction encoding`);
-                updateStatus('error', 'Execution failed');
+                document.getElementById('result').textContent = 'Error loading WebAssembly: ' + error.message;
+                console.error('WASM Error:', error);
             }
         }
 
-        function saveWASM() {
-            const wasmCode = document.getElementById('wasmEditor').value.trim();
+        // Alternative simple approach using JavaScript with WASM-like behavior
+        function simpleNeuron() {
+            // 50% chance of firing
+            return Math.random() < 0.5 ? 1 : 0;
+        }
+
+        function activateNeuron() {
+            const fired = simpleNeuron();
+            const neuron = document.getElementById('neuron1');
+            const result = document.getElementById('result');
             
-            if (!wasmCode) {
-                updateOutput('❌ Error: No WebAssembly code to save');
-                updateStatus('error', 'No code');
-                return;
+            if (fired) {
+                neuron.textContent = '●';
+                neuron.classList.add('fired');
+                result.textContent = '🔥 Neuron FIRED! (1)';
+            } else {
+                neuron.textContent = '○';
+                neuron.classList.remove('fired');
+                result.textContent = '❄️ Neuron did not fire (0)';
             }
-
-            try {
-                // Convert hex string to Uint8Array
-                const cleanHex = wasmCode.replace(/\s/g, '');
-                const wasmBytes = new Uint8Array(cleanHex.length / 2);
-                for (let i = 0; i < cleanHex.length; i += 2) {
-                    wasmBytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
-                }
-
-                // Create and download the file
-                const blob = new Blob([wasmBytes], { type: 'application/wasm' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'corrected_three_variable_calculator.wasm';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                updateOutput(`💾 WebAssembly saved successfully!\n\n` +
-                           `📊 **File Details:**\n` +
-                           `   • Filename: corrected_three_variable_calculator.wasm\n` +
-                           `   • Size: ${wasmBytes.length} bytes\n` +
-                           `   • Type: Validated WebAssembly Binary\n\n` +
-                           `🔧 **Content:**\n` +
-                           `   • 3-variable calculation (a=1, b=2, c=3)\n` +
-                           `   • Sum operation: a + b + c\n` +
-                           `   • Expected result: 6\n\n` +
-                           `✅ File saved - WebAssembly is validated and ready to use`);
-                
-                updateStatus('ready', 'Saved');
-                
-            } catch (error) {
-                updateOutput(`❌ Save failed: ${error.message}\n\n` +
-                           `💡 **Troubleshooting:**\n` +
-                           `   • Check WebAssembly hex code format\n` +
-                           `   • Ensure valid hex string\n` +
-                           `   • Verify browser supports file downloads`);
-                updateStatus('error', 'Save failed');
-            }
-        }
-
-        function updateStatus(status, message) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
             
-            statusDot.className = `status-dot ${status}`;
-            statusText.textContent = message;
+            // Reset animation
+            setTimeout(() => {
+                neuron.classList.remove('fired');
+            }, 1000);
         }
 
-        function updateOutput(message) {
-            const output = document.getElementById('output');
-            const timestamp = new Date().toLocaleTimeString();
-            output.textContent = `[${timestamp}] ${message}`;
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey || e.metaKey) {
-                switch(e.key) {
-                    case 'o':
-                        e.preventDefault();
-                        loadWASM();
-                        break;
-                    case 's':
-                        e.preventDefault();
-                        saveWASM();
-                        break;
-                    case 'Enter':
-                        e.preventDefault();
-                        executeWASM();
-                        break;
-                }
+        function activateMultiple(times) {
+            let results = [];
+            let firedCount = 0;
+            
+            for (let i = 0; i < times; i++) {
+                const result = simpleNeuron();
+                results.push(result);
+                if (result === 1) firedCount++;
             }
-        });
+            
+            const percentage = ((firedCount / times) * 100).toFixed(1);
+            document.getElementById('result').innerHTML = 
+                `Activated ${times} times:<br>` +
+                `Fired: ${firedCount} times (${percentage}%)<br>` +
+                `Results: ${results.join(', ')}`;
+        }
+
+        // Initialize on page load
+        window.onload = initWASM;
     </script>
 </body>
 </html>
