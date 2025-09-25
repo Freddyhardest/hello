@@ -224,5 +224,36 @@ const wasmBytes = new Uint8Array([
         // Initialize on page load
         window.onload = initWASM;
     </script>
+    <script src="ai-improve-api.js"></script>
+<script>
+    // Optional: Add a "Self-Improve" button
+    function addImproveButton() {
+        const btn = document.createElement('button');
+        btn.textContent = '🧠 Self-Improve';
+        btn.style.cssText = 'margin-top: 10px; padding: 10px 15px; background: #6a1b9a; color: white; border: none; border-radius: 5px; cursor: pointer;';
+        btn.onclick = async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Thinking... (check console for progress)';
+            
+            try {
+                const improver = new AIImprover();
+                const currentHtml = document.documentElement.outerHTML;
+                const improved = await improver.improve(currentHtml);
+                improver.applyImprovedHtml(improved);
+            } catch (err) {
+                document.getElementById('result').textContent = 'Error: ' + err.message;
+            }
+        };
+        
+        document.querySelector('.controls').appendChild(btn);
+    }
+
+    // Run when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addImproveButton);
+    } else {
+        addImproveButton();
+    }
+</script>
 </body>
 </html>
