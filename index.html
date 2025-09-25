@@ -3,314 +3,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WASM-Enhanced Universal Source Viewer</title>
+    <title>WebAssembly Execution Environment</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/mode-javascript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/theme-monokai.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f0f8ff;
-            color: #333;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .input-group {
-            display: flex;
-            margin: 20px 0;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px 0 0 4px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            background-color: #3498db;
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        pre {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            border: 1px solid #e9ecef;
-            white-space: pre-wrap;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-        }
-        .status {
+            padding: 30px;
             text-align: center;
-            font-weight: bold;
-            margin: 20px 0;
-            padding: 10px;
-            border-radius: 4px;
         }
-        .loading {
-            background-color: #fff3cd;
-            color: #856404;
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
         }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
         }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
         }
-        .stats-container {
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .panel h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .editor-container {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .controls {
             display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
+            gap: 10px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        .stat-box {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            padding: 15px;
-            text-align: center;
-            min-width: 120px;
-            margin: 5px;
-        }
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #3498db;
-        }
-        .stat-label {
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 14px;
-            color: #666;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
-        .wasm-status {
-            font-size: 12px;
-            color: #666;
-            text-align: right;
-            margin-top: 5px;
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
         }
-        .url-list {
-            max-height: 200px;
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .output-panel {
+            grid-column: 1 / -1;
+            background: #2c3e50;
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .output-content {
+            background: #1a252f;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 300px;
             overflow-y: auto;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            padding: 10px;
-            margin-top: 10px;
+            white-space: pre-wrap;
         }
-        .url-item {
-            font-family: 'Courier New', Courier, monospace;
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #34495e;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #95a5a6;
+        }
+
+        .status-dot.ready {
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.running {
+            background: #f39c12;
+            animation: pulse 1s infinite;
+        }
+
+        .status-dot.error {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .examples {
+            margin-top: 20px;
+        }
+
+        .example-btn {
+            background: #9b59b6;
+            color: white;
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 12px;
-            margin: 5px 0;
-            padding: 5px;
-            background-color: white;
-            border-radius: 3px;
-            word-break: break-all;
         }
+
+        .example-btn:hover {
+            background: #8e44ad;
+        }
+
+        .file-input {
+            display: none;
+        }
+
         .tabs {
             display: flex;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
         }
+
         .tab {
-            padding: 10px 15px;
+            padding: 10px 20px;
             cursor: pointer;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-bottom: none;
+            background: #e9ecef;
+            border: none;
             border-radius: 5px 5px 0 0;
             margin-right: 5px;
+            font-weight: 600;
         }
+
         .tab.active {
-            background-color: white;
-            border-bottom: 1px solid white;
-            margin-bottom: -1px;
+            background: #3498db;
+            color: white;
         }
+
         .tab-content {
             display: none;
         }
+
         .tab-content.active {
             display: block;
+        }
+
+        .format-selector {
+            margin-bottom: 15px;
+        }
+
+        .format-selector select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .info-panel {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-panel h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+
+        .info-panel ul {
+            color: #0c5460;
+            margin-left: 20px;
+        }
+
+        .info-panel li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌐 WASM-Enhanced Universal Source Viewer</h1>
-        <p>Enter a URL below. This tool will fetch and display its raw HTML source code and count all URLs using WebAssembly.</p>
-        
-        <div class="input-group">
-            <input type="text" id="urlInput" placeholder="https://example.com" value="https://example.com">
-            <button id="fetchButton">Fetch Source</button>
+        <div class="header">
+            <h1>🚀 WebAssembly Execution Environment</h1>
+            <p>Load, edit, save, and execute WebAssembly code in your browser</p>
         </div>
-        
-        <div id="status" class="status">Status: Ready</div>
-        <div class="wasm-status" id="wasmStatus">WASM Status: Not loaded</div>
-        
-        <div class="stats-container" id="statsContainer" style="display: none;">
-            <div class="stat-box">
-                <div class="stat-number" id="totalUrls">0</div>
-                <div class="stat-label">Total URLs</div>
+
+        <div class="info-panel">
+            <h4>📋 Instructions</h4>
+            <ul>
+                <li><strong>Load WASM:</strong> Upload a .wasm file or paste hex/binary data</li>
+                <li><strong>Edit Code:</strong> Modify the WebAssembly code in hex format</li>
+                <li><strong>Execute:</strong> Run the WASM module and see the output</li>
+                <li><strong>Save:</strong> Download your modified WASM file</li>
+                <li><strong>Examples:</strong> Try the pre-built Hello World examples</li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h3>📝 WebAssembly Code Editor</h3>
+                
+                <div class="format-selector">
+                    <label>Format: </label>
+                    <select id="formatSelect">
+                        <option value="hex">Hex Format</option>
+                        <option value="binary">Binary String</option>
+                        <option value="wat">WebAssembly Text (WAT)</option>
+                    </select>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="editor">Editor</button>
+                    <button class="tab" data-tab="upload">Upload File</button>
+                </div>
+
+                <div class="tab-content active" id="editorTab">
+                    <div class="editor-container" id="wasmEditor"></div>
+                </div>
+
+                <div class="tab-content" id="uploadTab">
+                    <div style="padding: 20px; text-align: center;">
+                        <p>Upload a .wasm file:</p>
+                        <input type="file" id="fileInput" class="file-input" accept=".wasm">
+                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            📁 Choose File
+                        </button>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-success" onclick="executeWASM()">▶️ Execute</button>
+                    <button class="btn btn-primary" onclick="saveWASM()">💾 Save WASM</button>
+                    <button class="btn btn-warning" onclick="clearEditor()">🗑️ Clear</button>
+                </div>
+
+                <div class="examples">
+                    <h4>📚 Examples:</h4>
+                    <button class="example-btn" onclick="loadHelloWorld()">Hello World</button>
+                    <button class="example-btn" onclick="loadCalculator()">Calculator</button>
+                    <button class="example-btn" onclick="loadMemoryDemo()">Memory Demo</button>
+                </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-number" id="hrefUrls">0</div>
-                <div class="stat-label">Links (href)</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="srcUrls">0</div>
-                <div class="stat-label">Resources (src)</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="uniqueUrls">0</div>
-                <div class="stat-label">Unique URLs</div>
+
+            <div class="panel">
+                <h3>⚙️ Execution Settings</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label><strong>Memory Size (pages):</strong></label>
+                    <input type="number" id="memorySize" value="1" min="1" max="65536" style="width: 100px; margin-left: 10px;">
+                    <small style="color: #666;">(1 page = 64KB)</small>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label><strong>Import Functions:</strong></label>
+                    <div style="margin-top: 10px;">
+                        <textarea id="importFunctions" rows="6" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Define import functions in JSON format..."></textarea>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label><strong>Function to Call:</strong></label>
+                    <input type="text" id="functionToCall" value="main" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label><strong>Function Arguments:</strong></label>
+                    <input type="text" id="functionArgs" placeholder="e.g., 5, 10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="validateWASM()">✅ Validate</button>
+                    <button class="btn btn-warning" onclick="disassembleWASM()">🔍 Disassemble</button>
+                </div>
             </div>
         </div>
-        
-        <div class="tabs" id="tabsContainer" style="display: none;">
-            <div class="tab active" data-tab="source">Source Code</div>
-            <div class="tab" data-tab="urls">URL List</div>
-        </div>
-        
-        <div class="tab-content active" id="sourceTab">
-            <div id="result"></div>
-        </div>
-        
-        <div class="tab-content" id="urlsTab">
-            <div class="url-list" id="urlList"></div>
+
+        <div class="output-panel">
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot ready" id="statusDot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <div id="executionTime"></div>
+            </div>
+            
+            <h3>📋 Execution Output</h3>
+            <div class="output-content" id="output">Ready to execute WebAssembly code...</div>
         </div>
     </div>
 
     <script>
-        // WASM Module and URL Counter
-        class WASMUrlCounter {
-            constructor() {
-                this.wasmModule = null;
-                this.initialized = false;
-            }
-            
-            async init() {
-                if (this.initialized) return;
-                
-                try {
-                    // For demonstration, we'll create a simple WASM module using WebAssembly.textToBinary
-                    // In a real implementation, you would load a pre-compiled WASM file
-                    
-                    // Create a simple WASM module that counts URLs
-                    const wasmCode = new Uint8Array([
-                        0x00, 0x61, 0x73, 0x6d,  // Magic number
-                        0x01, 0x00, 0x00, 0x00,  // Version
-                        // Type section
-                        0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f,
-                        // Function section
-                        0x03, 0x02, 0x01, 0x00,
-                        // Export section
-                        0x07, 0x07, 0x01, 0x03, 0x61, 0x64, 0x64, 0x00, 0x00,
-                        // Code section
-                        0x0a, 0x09, 0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b
-                    ]);
-                    
-                    // Create WASM module
-                    const wasmModule = await WebAssembly.instantiate(wasmCode);
-                    this.wasmModule = wasmModule.instance;
-                    this.initialized = true;
-                    
-                    document.getElementById('wasmStatus').textContent = 'WASM Status: Loaded successfully';
-                    console.log('✅ WASM module loaded successfully');
-                } catch (error) {
-                    console.error('❌ Error loading WASM module:', error);
-                    document.getElementById('wasmStatus').textContent = 'WASM Status: Failed to load';
-                }
-            }
-            
-            // Simulate WASM URL counting function
-            // In a real implementation, this would call the WASM function
-            countUrls(html) {
-                if (!this.initialized) {
-                    console.warn('WASM module not initialized, falling back to JavaScript');
-                    return this.jsCountUrls(html);
-                }
-                
-                // For demonstration, we'll use JavaScript but in a real implementation
-                // this would call: this.wasmModule.exports.countUrls(htmlPtr, htmlLength);
-                return this.jsCountUrls(html);
-            }
-            
-            // JavaScript fallback for URL counting
-            jsCountUrls(html) {
-                const urls = {
-                    total: 0,
-                    href: 0,
-                    src: 0,
-                    unique: new Set(),
-                    all: []
-                };
-                
-                // Regular expressions to find URLs
-                const hrefRegex = /href=["']([^"']+)["']/gi;
-                const srcRegex = /src=["']([^"']+)["']/gi;
-                
-                let match;
-                
-                // Count href URLs
-                while ((match = hrefRegex.exec(html)) !== null) {
-                    urls.total++;
-                    urls.href++;
-                    urls.unique.add(match[1]);
-                    urls.all.push({ type: 'href', url: match[1] });
-                }
-                
-                // Count src URLs
-                while ((match = srcRegex.exec(html)) !== null) {
-                    urls.total++;
-                    urls.src++;
-                    urls.unique.add(match[1]);
-                    urls.all.push({ type: 'src', url: match[1] });
-                }
-                
-                return {
-                    total: urls.total,
-                    href: urls.href,
-                    src: urls.src,
-                    unique: urls.unique.size,
-                    all: urls.all
-                };
-            }
-        }
-        
-        // Initialize WASM URL Counter
-        const wasmUrlCounter = new WASMUrlCounter();
-        
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Load WASM module
-            await wasmUrlCounter.init();
-            
-            // Set up event listeners
-            document.getElementById('fetchButton').addEventListener('click', fetchSource);
-            document.getElementById('urlInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    fetchSource();
-                }
+        // Initialize ACE editor
+        let editor;
+        let currentFormat = 'hex';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize ACE editor
+            editor = ace.edit("wasmEditor");
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/javascript");
+            editor.setOptions({
+                fontSize: "14px",
+                showPrintMargin: false,
+                wrap: true
             });
-            
-            // Set up tab switching
+
+            // Set default content
+            loadHelloWorld();
+
+            // Setup event listeners
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Tab switching
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
@@ -326,87 +450,278 @@
                     document.getElementById(tabName + 'Tab').classList.add('active');
                 });
             });
-        });
-        
-        async function fetchSource() {
-            const urlInput = document.getElementById('urlInput');
-            const statusDiv = document.getElementById('status');
-            const resultDiv = document.getElementById('result');
-            const targetUrl = urlInput.value.trim();
-            
-            // Basic validation
-            if (!targetUrl) {
-                statusDiv.textContent = 'Status: Please enter a URL.';
-                statusDiv.className = 'status error';
-                return;
-            }
-            
-            // Reset UI
-            resultDiv.innerHTML = '';
-            statusDiv.textContent = 'Status: Fetching...';
-            statusDiv.className = 'status loading';
-            
-            // Hide stats and tabs
-            document.getElementById('statsContainer').style.display = 'none';
-            document.getElementById('tabsContainer').style.display = 'none';
-            
-            try {
-                // Send the request to the PHP server
-                const response = await fetch('http://pagename.atwebpages.com/hello.php?url=' + encodeURIComponent(targetUrl));
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
-                // Count URLs using WASM-enhanced counter
-                const urlCounts = wasmUrlCounter.countUrls(data.html);
-                
-                // Update stats
-                document.getElementById('totalUrls').textContent = urlCounts.total;
-                document.getElementById('hrefUrls').textContent = urlCounts.href;
-                document.getElementById('srcUrls').textContent = urlCounts.src;
-                document.getElementById('uniqueUrls').textContent = urlCounts.unique;
-                
-                // Display the raw HTML source code
-                resultDiv.innerHTML = `
-                    <h2>✅ Success! Raw HTML from <code>${targetUrl}</code>:</h2>
-                    <pre>${data.html}</pre>
-                `;
-                
-                // Display URL list
-                const urlListDiv = document.getElementById('urlList');
-                urlListDiv.innerHTML = '<h3>Found URLs:</h3>';
-                
-                if (urlCounts.all.length > 0) {
-                    urlCounts.all.forEach(item => {
-                        const urlItem = document.createElement('div');
-                        urlItem.className = 'url-item';
-                        urlItem.innerHTML = `<strong>${item.type}:</strong> ${item.url}`;
-                        urlListDiv.appendChild(urlItem);
-                    });
-                } else {
-                    urlListDiv.innerHTML += '<p>No URLs found in the HTML.</p>';
-                }
-                
-                // Show stats and tabs
-                document.getElementById('statsContainer').style.display = 'flex';
-                document.getElementById('tabsContainer').style.display = 'flex';
-                
-                statusDiv.textContent = `Status: Fetched ${data.size} in ${data.time}s - Found ${urlCounts.total} URLs`;
-                statusDiv.className = 'status success';
-                
-            } catch (error) {
-                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
-                statusDiv.textContent = 'Status: Failed';
-                statusDiv.className = 'status error';
+
+            // Format selector
+            document.getElementById('formatSelect').addEventListener('change', function() {
+                currentFormat = this.value;
+                updateEditorMode();
+            });
+
+            // File input
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        }
+
+        function updateEditorMode() {
+            switch(currentFormat) {
+                case 'hex':
+                    editor.session.setMode("ace/mode/javascript");
+                    break;
+                case 'binary':
+                    editor.session.setMode("ace/mode/javascript");
+                    break;
+                case 'wat':
+                    editor.session.setMode("ace/mode/javascript");
+                    break;
             }
         }
+
+        function loadHelloWorld() {
+            const helloWorldWasm = [
+                '00', '61', '73', '6d', // Magic number
+                '01', '00', '00', '00', // Version
+                '01', '07', '01', '60', // Type section
+                '00', '00', // No parameters, no returns
+                '03', '02', '01', '00', // Function section
+                '07', '10', '02', '06', '6d', '65', '6d', '6f', '72', '79', // Export section
+                '02', '00', // Memory export
+                '06', '68', '65', '6c', '6c', '6f', // Function export
+                '00', '00', // Function index 0
+                '05', '03', '01', '00', '10', // Memory section
+                '0a', '09', '01', '07', '00', // Code section
+                '41', '0c', // i32.const 12
+                '0b', // End
+                '00', '0b' // End of section
+            ];
+
+            editor.setValue(helloWorldWasm.join(' '), -1);
+            document.getElementById('functionToCall').value = 'hello';
+            updateOutput('Hello World WASM loaded. Click Execute to run.');
+        }
+
+        function loadCalculator() {
+            const calculatorWasm = [
+                '00', '61', '73', '6d', // Magic number
+                '01', '00', '00', '00', // Version
+                '01', '07', '01', '60', // Type section
+                '02', '7f', '7f', '01', '7f', // Two i32 parameters, one i32 return
+                '03', '02', '01', '00', // Function section
+                '07', '0a', '01', '06', '61', '64', '64', '5f', '6e', '75', '6d', // Export section
+                '73', '00', '00', // Function export
+                '0a', '09', '01', '07', '00', // Code section
+                '20', '00', // local.get 0
+                '20', '01', // local.get 1
+                '6a', '0b' // i32.add, end
+            ];
+
+            editor.setValue(calculatorWasm.join(' '), -1);
+            document.getElementById('functionToCall').value = 'add_nums';
+            document.getElementById('functionArgs').value = '5, 3';
+            updateOutput('Calculator WASM loaded. It will add two numbers.');
+        }
+
+        function loadMemoryDemo() {
+            const memoryWasm = [
+                '00', '61', '73', '6d', // Magic number
+                '01', '00', '00', '00', // Version
+                '01', '04', '01', '60', // Type section
+                '00', '00', // No parameters, no returns
+                '03', '02', '01', '00', // Function section
+                '05', '03', '01', '00', '01', // Memory section (1 page)
+                '07', '13', '02', '06', '6d', '65', '6d', '6f', '72', '79', // Export section
+                '02', '00', // Memory export
+                '07', '73', '74', '6f', '72', '65', '5f', '64', '61', '74', '61', // Function export
+                '00', '00', // Function index 0
+                '0a', '1e', '01', '1c', '00', // Code section
+                '41', '00', // i32.const 0
+                '41', '0d', // i32.const 13
+                '41', '00', // i32.const 0
+                '36', '02', '00', // i32.store offset=0
+                '41', '04', // i32.const 4
+                '41', '05', // i32.const 5
+                '41', '04', // i32.const 4
+                '36', '02', '00', // i32.store offset=0
+                '0b' // End
+            ];
+
+            // Add data section
+            const dataSection = [
+                '0b', '0d', '01', '00', // Data section
+                '41', '00', // i32.const 0
+                '0b', '48', '65', '6c', '6c', '6f', '20', '57', '6f', '72', '6c', '64', '21', '00' // Data
+            ];
+
+            const fullWasm = memoryWasm.concat(dataSection);
+            editor.setValue(fullWasm.join(' '), -1);
+            document.getElementById('functionToCall').value = 'store_data';
+            updateOutput('Memory demo WASM loaded. It stores data in memory.');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const bytes = new Uint8Array(arrayBuffer);
+                const hexArray = Array.from(bytes).map(b => b.toString(16).padStart(2, '0'));
+                editor.setValue(hexArray.join(' '), -1);
+                updateOutput(`Loaded ${file.name} (${bytes.length} bytes)`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function hexToBytes(hexString) {
+            const bytes = new Uint8Array(hexString.length / 2);
+            for (let i = 0; i < hexString.length; i += 2) {
+                bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
+            }
+            return bytes;
+        }
+
+        function executeWASM() {
+            const startTime = performance.now();
+            updateStatus('running', 'Executing...');
+            
+            try {
+                const wasmCode = editor.getValue();
+                const wasmBytes = hexToBytes(wasmCode.replace(/\s/g, ''));
+                
+                WebAssembly.instantiate(wasmBytes, getImportObject())
+                    .then(result => {
+                        const instance = result.instance;
+                        const exports = instance.exports;
+                        
+                        const functionName = document.getElementById('functionToCall').value;
+                        const args = parseFunctionArguments();
+                        
+                        if (exports[functionName]) {
+                            const output = exports[functionName](...args);
+                            const endTime = performance.now();
+                            const executionTime = (endTime - startTime).toFixed(2);
+                            
+                            updateOutput(`✅ Function '${functionName}' executed successfully!\n` +
+                                       `📊 Result: ${output}\n` +
+                                       `⏱️ Execution time: ${executionTime}ms\n` +
+                                       `🔍 Available exports: ${Object.keys(exports).join(', ')}`);
+                            
+                            updateStatus('ready', 'Execution completed');
+                            document.getElementById('executionTime').textContent = `Time: ${executionTime}ms`;
+                        } else {
+                            throw new Error(`Function '${functionName}' not found in exports`);
+                        }
+                    })
+                    .catch(error => {
+                        throw new Error(`WASM instantiation failed: ${error.message}`);
+                    });
+                
+            } catch (error) {
+                updateStatus('error', 'Execution failed');
+                updateOutput(`❌ Error: ${error.message}\n` +
+                           `📋 Please check your WASM code and try again.`);
+            }
+        }
+
+        function getImportObject() {
+            const importText = document.getElementById('importFunctions').value;
+            if (!importText.trim()) {
+                return {};
+            }
+            
+            try {
+                return JSON.parse(importText);
+            } catch (error) {
+                console.warn('Invalid import functions JSON, using empty object');
+                return {};
+            }
+        }
+
+        function parseFunctionArguments() {
+            const argsText = document.getElementById('functionArgs').value;
+            if (!argsText.trim()) {
+                return [];
+            }
+            
+            return argsText.split(',').map(arg => {
+                const trimmed = arg.trim();
+                if (trimmed === 'true') return true;
+                if (trimmed === 'false') return false;
+                if (trimmed === 'null') return null;
+                if (trimmed === 'undefined') return undefined;
+                if (!isNaN(trimmed)) return Number(trimmed);
+                return trimmed;
+            });
+        }
+
+        function validateWASM() {
+            try {
+                const wasmCode = editor.getValue();
+                const wasmBytes = hexToBytes(wasmCode.replace(/\s/g, ''));
+                
+                WebAssembly.validate(wasmBytes)
+                    .then(isValid => {
+                        if (isValid) {
+                            updateOutput('✅ WebAssembly code is valid!');
+                            updateStatus('ready', 'Validation passed');
+                        } else {
+                            updateOutput('❌ WebAssembly code is invalid!');
+                            updateStatus('error', 'Validation failed');
+                        }
+                    })
+                    .catch(error => {
+                        updateOutput(`❌ Validation error: ${error.message}`);
+                        updateStatus('error', 'Validation failed');
+                    });
+            } catch (error) {
+                updateOutput(`❌ Validation error: ${error.message}`);
+                updateStatus('error', 'Validation failed');
+            }
+        }
+
+        function disassembleWASM() {
+            updateOutput('🔍 Disassembly feature requires additional libraries.\n' +
+                       '💡 Tip: You can use WebAssembly Binary Toolkit (WABT) for disassembly:\n' +
+                       '   wasm2wat your_file.wasm -o output.wat');
+        }
+
+        function saveWASM() {
+            try {
+                const wasmCode = editor.getValue();
+                const wasmBytes = hexToBytes(wasmCode.replace(/\s/g, ''));
+                
+                const blob = new Blob([wasmBytes], { type: 'application/wasm' });
+                const fileName = document.getElementById('functionToCall').value + '.wasm';
+                
+                saveAs(blob, fileName);
+                updateOutput(`💾 WASM file saved as ${fileName}`);
+            } catch (error) {
+                updateOutput(`❌ Save failed: ${error.message}`);
+            }
+        }
+
+        function clearEditor() {
+            editor.setValue('', -1);
+            updateOutput('Editor cleared. Ready for new WASM code.');
+        }
+
+        function updateStatus(status, message) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            statusDot.className = `status-dot ${status}`;
+            statusText.textContent = message;
+        }
+
+        function updateOutput(message) {
+            const outputDiv = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            outputDiv.textContent = `[${timestamp}] ${message}`;
+        }
+
+        // Initialize with Hello World example
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHelloWorld();
+        });
     </script>
 </body>
 </html>
